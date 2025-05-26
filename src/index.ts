@@ -1,7 +1,11 @@
-import { Elysia } from "elysia";
+import Elysia from "elysia";
+import { aptRoutes } from "./routes";
+import swagger from "@elysiajs/swagger";
 
-const app = new Elysia().get("/", () => "Hello Elysia").listen(3000);
+const app = new Elysia();
 
-console.log(
-  `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`
-);
+app.group("", (app) => app.use(aptRoutes))
+    .use(swagger())
+    .listen(process.env.PORT || 3000);
+
+console.log('Server is listening port ' + (process.env.PORT || 3000));
