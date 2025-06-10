@@ -1,4 +1,4 @@
-FROM debian:11.6-slim as builder
+FROM debian:11.6-slim AS builder
 
 WORKDIR /app
 
