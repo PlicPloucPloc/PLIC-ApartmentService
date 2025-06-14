@@ -1,5 +1,4 @@
-class apartments{
-    appartment_id: number;
+class apartment_info{
     name: string;
     description: string;
     location: string;
@@ -20,9 +19,9 @@ class apartments{
     security_deposite: number;
     include_charges: boolean;
     parking_spaces: number;
+    platform_id: string | null;
 
     constructor(
-        appartment_id: number,
         name: string,
         description: string,
         location: string,
@@ -42,9 +41,9 @@ class apartments{
         monthly_charges: number,
         security_deposite: number,
         include_charges: boolean,
-        parking_spaces: number
+        parking_spaces: number,
+        platform_id?: string
     ){
-        this.appartment_id = appartment_id;
         this.name = name;
         this.description = description;
         this.location = location;
@@ -65,7 +64,11 @@ class apartments{
         this.security_deposite = security_deposite;
         this.include_charges = include_charges;
         this.parking_spaces = parking_spaces;
+        if (platform_id !== undefined)
+            this.platform_id = platform_id;
+        else
+            this.platform_id = null;
     }
 }
 
-export default apartments;
+export default apartment_info;
