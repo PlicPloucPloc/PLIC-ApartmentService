@@ -1,15 +1,9 @@
-# Elysia with Bun runtime
+# Apartment Service
 
-## Getting Started
-To get started with this template, simply paste this command into your terminal:
-```bash
-bun create elysia ./elysia-example
-```
+Handles the creation, deletion and management of apartments.
 
-## Development
-To start the development server run:
-```bash
-bun run dev
-```
+Start this service using the [PLIC-LocalDevelopment](https://github.com/PlicPloucPloc/PLIC-Local_Development) branch.
 
-Open http://localhost:3000/ with your browser to see the result.
+Every endpoints here need the field Authorization: Bearer <token> in the header.
+
+> You can acces the Swagger using (localhost:3003/swagger)[localhost:3003/swagger] if you start the service locally.
