@@ -5,7 +5,7 @@ import { HttpError } from "elysia-http-error";
 import request from "./requests/request";
 import apartment_info from "../models/apartment_info";
 
-const aptRoutes = new Elysia({prefix: '/apt'});
+const aptRoutes = new Elysia();
 
 // Read aparment informations by ID
 aptRoutes.use(bearer()).get('/:id', async ({bearer, params}) => {
@@ -25,7 +25,7 @@ aptRoutes.use(bearer()).get('/:id', async ({bearer, params}) => {
 },{
     beforeHandle({ bearer, set }) {
         if (!bearer) {
-            console.log("Bearer found");
+            console.log("Bearer not found");
             set.headers[
                 'WWW-Authenticate'
             ] = `Bearer realm='sign', error="invalid_request"`
@@ -54,7 +54,7 @@ aptRoutes.use(bearer()).delete('/:id', async ({bearer, params}) => {
 },{
     beforeHandle({ bearer, set }) {
         if (!bearer) {
-            console.log("Bearer found");
+            console.log("Bearer not found");
             set.headers[
                 'WWW-Authenticate'
             ] = `Bearer realm='sign', error="invalid_request"`
@@ -65,7 +65,7 @@ aptRoutes.use(bearer()).delete('/:id', async ({bearer, params}) => {
 });
 
 // Get apartments paginated
-aptRoutes.use(bearer()).get('', async ({bearer,query}) => {
+aptRoutes.use(bearer()).get('/', async ({bearer,query}) => {
     try {
         const offset = query.offset ? parseInt(query.offset) : 0;
         const limit = query.limit ? parseInt(query.limit) : 10;
@@ -79,7 +79,7 @@ aptRoutes.use(bearer()).get('', async ({bearer,query}) => {
 },{
     beforeHandle({ bearer, set }) {
         if (!bearer) {
-            console.log("Bearer found");
+            console.log("Bearer not found");
             set.headers[
                 'WWW-Authenticate'
             ] = `Bearer realm='sign', error="invalid_request"`
@@ -104,7 +104,7 @@ aptRoutes.use(bearer()).get('/owned', async ({bearer,query}) => {
 },{
     beforeHandle({ bearer, set }) {
         if (!bearer) {
-            console.log("Bearer found");
+            console.log("Bearer not found");
             set.headers[
                 'WWW-Authenticate'
             ] = `Bearer realm='sign', error="invalid_request"`
@@ -118,26 +118,20 @@ aptRoutes.use(bearer()).post('/', async ({bearer, body}) => {
     try{
         await createApartment(bearer, new request(
             body.name,
-            body.description,
             body.location,
-            body.type,
             body.is_furnished,
             body.surface,
+            body.energy_class,
+            body.available_from,
+            body.rent,
+            body.type,
+            body.ges,
+            body.description,
             body.number_of_rooms,
             body.number_of_bedrooms,
-            body.energy_class,
-            body.ges,
-            body.additional_data,
-            body.heating_type,
-            body.heating_mode,
             body.floor,
             body.elevator,
-            body.available_from,
-            body.monthly_charges,
-            body.security_desposit,
-            body.include_charges,
             body.parking_spaces,
-            body.platform_id
         )); 
     }
     catch (error) {
@@ -153,15 +147,8 @@ aptRoutes.use(bearer()).post('/', async ({bearer, body}) => {
         name: t.String({
             required: true,
         }),
-        description: t.String({
-            required: false,
-        }),
         location: t.String({
             required: true,
-        }),
-        type: t.String({
-            required: true,
-            enum: ['apartment', 'house', 'condo']
         }),
         is_furnished: t.Boolean({
             required: false,
@@ -170,34 +157,34 @@ aptRoutes.use(bearer()).post('/', async ({bearer, body}) => {
         surface: t.Number({
             required: true,
         }),
-        number_of_rooms: t.Number({
-            required: true,
-        }),
-        number_of_bedrooms: t.Number({
-            required: true,
-        }),
         energy_class: t.String({
             required: false,
             enum: ['A', 'B', 'C', 'D', 'E', 'F', 'G'],
             default: 'G'
+        }),
+        available_from: t.String({
+            required: true,
+        }),
+        rent: t.Number({
+            required: true,
+        }),
+        type: t.String({
+            required: true,
+            enum: ['apartment', 'house', 'condo']
         }),
         ges: t.String({
             required: false,
             enum: ['A', 'B', 'C', 'D', 'E', 'F', 'G'],
             default: 'G'
         }),
-        additional_data: t.String({
+        description: t.String({
             required: false,
         }),
-        heating_type: t.String({
-            required: false,
-            enum: ['electric', 'gas', 'oil', 'wood', 'solar', 'geothermal'],
-            default: 'electric'
+        number_of_rooms: t.Number({
+            required: true,
         }),
-        heating_mode: t.String({
-            required: false,
-            enum: ['individual', 'collective'],
-            default: 'individual'
+        number_of_bedrooms: t.Number({
+            required: true,
         }),
         floor: t.Number({
             required: false,
@@ -205,30 +192,14 @@ aptRoutes.use(bearer()).post('/', async ({bearer, body}) => {
         elevator: t.Boolean({
             required: false,
         }),
-        available_from: t.String({
-            required: true,
-        }),
-        monthly_charges: t.Number({
-            required: true,
-        }),
-        security_desposit: t.Number({
-            required: true,
-        }),
-        include_charges: t.Boolean({
-            required: false,
-            default:false
-        }),
         parking_spaces: t.Number({
             required: false,
             default: 0
         }),
-        platform_id: t.String({
-            required: false,
-        }),
     }),
     beforeHandle({ bearer, set }) {
         if (!bearer) {
-            console.log("Bearer found");
+            console.log("Bearer not found");
             set.headers[
                 'WWW-Authenticate'
             ] = `Bearer realm='sign', error="invalid_request"`
@@ -241,27 +212,22 @@ aptRoutes.use(bearer()).post('/', async ({bearer, body}) => {
 aptRoutes.use(bearer()).put('/', async ({ bearer,body }) => {
     try{
         await updateApartment(bearer, new apartment_info(
-            body.appartment_id,
+            body.apartment_id,
             body.name,
-            body.description,
             body.location,
-            body.type,
             body.is_furnished,
             body.surface,
+            body.energy_class,
+            body.available_from,
+            body.rent,
+            body.type,
+            body.ges,
+            body.description,
             body.number_of_rooms,
             body.number_of_bedrooms,
-            body.energy_class,
-            body.ges,
-            body.additional_data,
-            body.heating_type,
-            body.heating_mode,
             body.floor,
             body.elevator,
-            body.available_from,
-            body.monthly_charges,
-            body.security_desposit,
-            body.include_charges,
-            body.parking_spaces
+            body.parking_spaces,
         ))
         return new Response("{\"status\":\"OK\"}", {status: 200, headers: { "Content-Type": "application/json"}})
     } catch(error){
@@ -273,21 +239,14 @@ aptRoutes.use(bearer()).put('/', async ({ bearer,body }) => {
 },
 {
     body: t.Object ({
-        appartment_id: t.Number({
+        apartment_id: t.Number({
             required: true
         }),
         name: t.String({
             required: true,
         }),
-        description: t.String({
-            required: false,
-        }),
         location: t.String({
             required: true,
-        }),
-        type: t.String({
-            required: true,
-            enum: ['apartment', 'house', 'condo']
         }),
         is_furnished: t.Boolean({
             required: false,
@@ -296,34 +255,34 @@ aptRoutes.use(bearer()).put('/', async ({ bearer,body }) => {
         surface: t.Number({
             required: true,
         }),
-        number_of_rooms: t.Number({
-            required: true,
-        }),
-        number_of_bedrooms: t.Number({
-            required: true,
-        }),
         energy_class: t.String({
             required: false,
             enum: ['A', 'B', 'C', 'D', 'E', 'F', 'G'],
             default: 'G'
+        }),
+        available_from: t.String({
+            required: true,
+        }),
+        rent: t.Number({
+            required: true,
+        }),
+        type: t.String({
+            required: true,
+            enum: ['apartment', 'house', 'condo']
         }),
         ges: t.String({
             required: false,
             enum: ['A', 'B', 'C', 'D', 'E', 'F', 'G'],
             default: 'G'
         }),
-        additional_data: t.String({
+        description: t.String({
             required: false,
         }),
-        heating_type: t.String({
-            required: false,
-            enum: ['electric', 'gas', 'oil', 'wood', 'solar', 'geothermal'],
-            default: 'electric'
+        number_of_rooms: t.Number({
+            required: true,
         }),
-        heating_mode: t.String({
-            required: false,
-            enum: ['individual', 'collective'],
-            default: 'individual'
+        number_of_bedrooms: t.Number({
+            required: true,
         }),
         floor: t.Number({
             required: false,
@@ -331,27 +290,14 @@ aptRoutes.use(bearer()).put('/', async ({ bearer,body }) => {
         elevator: t.Boolean({
             required: false,
         }),
-        available_from: t.String({
-            required: true,
-        }),
-        monthly_charges: t.Number({
-            required: true,
-        }),
-        security_desposit: t.Number({
-            required: true,
-        }),
-        include_charges: t.Boolean({
-            required: false,
-            default:false
-        }),
         parking_spaces: t.Number({
             required: false,
             default: 0
-        })
+        }),
     }),
     beforeHandle({ bearer, set }) {
         if (!bearer) {
-            console.log("Bearer found");
+            console.log("Bearer not found");
             set.headers[
                 'WWW-Authenticate'
             ] = `Bearer realm='sign', error="invalid_request"`

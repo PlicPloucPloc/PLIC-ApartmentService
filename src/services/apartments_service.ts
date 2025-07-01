@@ -62,24 +62,19 @@ async function createApartment(bearer: string, req: request) : Promise<void>{
     const new_apt = new apartment_info(
         obj,
         req.name,
-        req.description,
         req.location,
-        req.type,
         req.is_furnished,
         req.surface,
-        req.number_of_rooms,
-        req.number_of_bedrooms,
         req.energy_class,
+        req.available_from,
+        req.rent,
+        req.type,
         req.ges,
-        req.additional_data,
-        req.heating_type,
-        req.heating_mode,
+        req.description,
+        req.number_of_rooms,
+        req.number_of_bed_rooms,
         req.floor,
         req.elevator,
-        req.available_from,
-        req.monthly_charges,
-        req.security_deposite,
-        req.include_charges,
         req.parking_spaces,
     )
     try {
@@ -87,7 +82,7 @@ async function createApartment(bearer: string, req: request) : Promise<void>{
     } catch (error) {
        deleteApartmentInfo(obj); 
     }
-    console.log("Created apartment: " + new_apt.appartment_id);
+    console.log("Created apartment: " + new_apt.apartment_id);
 }
 
 async function updateApartment(bearer: string,apartment_info: apartment_info) {
@@ -95,7 +90,7 @@ async function updateApartment(bearer: string,apartment_info: apartment_info) {
     if (!userId) {
         throw HttpError.Unauthorized("User not found or Unauthorized");
     }
-    const apt = await getApartmentById(apartment_info.appartment_id);
+    const apt = await getApartmentById(apartment_info.apartment_id);
     if (!apt) {
         throw HttpError.NotFound("Apartment not found");
     }
@@ -103,7 +98,7 @@ async function updateApartment(bearer: string,apartment_info: apartment_info) {
         throw HttpError.Unauthorized("Apartment not owned");
     }
     await updateApartmentInfo(apartment_info);
-    console.log("Updated apartment: " + apt.appartment_id);
+    console.log("Updated apartment: " + apt.apartment_id);
 }
 
 async function deleteApartment(bearer: string, id: number) : Promise<void> {
