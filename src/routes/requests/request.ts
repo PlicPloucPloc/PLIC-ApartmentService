@@ -31,7 +31,7 @@ class apartment_info {
         floor: number,
         elevator: boolean,
         parking_spaces: number,
-    ){
+    ) {
         this.name = name;
         this.location = location;
         this.is_furnished = is_furnished;

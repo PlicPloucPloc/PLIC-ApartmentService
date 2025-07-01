@@ -33,7 +33,7 @@ class apartment_info {
         floor: number,
         elevator: boolean,
         parking_spaces: number,
-    ){
+    ) {
         this.apartment_id = apartment_id;
         this.name = name;
         this.location = location;
