@@ -10,13 +10,16 @@ async function getUser(bearer: String): Promise<string> {
         },
     });
     const resp = await fetch(request);
-    if (!resp || resp.status == 403) {
-        throw HttpError.Forbidden('User not found or acces denied');
-    }
+    if (!resp) {
+        throw HttpError.ServiceUnavailable('User Service: No response from user service');
+    } 
     const content = await resp.json();
+    if ( resp.status == 403) {
+        throw HttpError.Forbidden('User Service: ' + content.message);
+    }
     console.log('Content: ' + content);
     if (content === null) {
-        throw HttpError.Forbidden('User not found or acces denied');
+        throw HttpError.ServiceUnavailable('User Service: No response from user service');
     }
     return content.id;
 }
