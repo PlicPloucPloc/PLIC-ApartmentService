@@ -193,7 +193,7 @@ aptRoutes.use(bearer()).post(
             throw error;
         }
         return new Response('{"status":"OK"}', {
-            status: 200,
+            status: 201,
             headers: { 'Content-Type': 'application/json' },
         });
     },
