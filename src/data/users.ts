@@ -13,12 +13,15 @@ async function getUser(bearer: String): Promise<string> {
     if (!resp) {
         console.error('No response from user service');
         throw HttpError.ServiceUnavailable('User Service: No response from user service');
-    } 
-    const content = await resp.json();
-    if ( resp.status == 403) {
-        console.error(content.message);
-        throw HttpError.Forbidden('User Service: ' + content.message);
     }
+    if (resp.status == 403) {
+        const content = await resp.text();
+
+        console.error(content);
+        throw HttpError.Forbidden('User Service: ' + content);
+    }
+
+    const content = await resp.json();
     console.log('Content: ' + content);
     if (content === null) {
         console.error('Unable to reach user service');

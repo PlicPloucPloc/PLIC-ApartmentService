@@ -43,14 +43,18 @@ async function readApartmentsInfoPaginated(
     return apt_infos;
 }
 
-async function readApartmentsInfosWithNoRelations(bearer: string, offset: number, limit: number): Promise<apartment_info[]> {
+async function readApartmentsInfosWithNoRelations(
+    bearer: string,
+    offset: number,
+    limit: number,
+): Promise<apartment_info[]> {
     const userId = await getUser(bearer);
     if (!userId) {
         throw HttpError.Unauthorized('User not found or Unauthorized');
     }
 
     const apt_ids = await getApartmentIdNoRelations(bearer, offset, limit);
-    if (!apt_ids || apt_ids.length === 0) {
+    if (!apt_ids) {
         throw HttpError.NotFound('No apartments found for this user');
     }
 
@@ -65,7 +69,6 @@ async function readApartmentsInfosWithNoRelations(bearer: string, offset: number
     }
 
     return apt_infos;
-
 }
 
 async function readApartmentsInfosByOwner(
@@ -96,7 +99,7 @@ async function readApartmentsInfosByOwner(
 
 async function createApartment(bearer: string, req: request): Promise<void> {
     const userId = await getUser(bearer);
-    console.log("Request to create apartment: ", req);
+    console.log('Request to create apartment: ', req);
 
     if (!userId) {
         throw HttpError.Unauthorized('User do not exist');
@@ -168,5 +171,5 @@ export {
     readApartmentsInfosByOwner,
     readApartmentsInfoPaginated,
     readApartmentsInfoById,
-    readApartmentsInfosWithNoRelations
+    readApartmentsInfosWithNoRelations,
 };
