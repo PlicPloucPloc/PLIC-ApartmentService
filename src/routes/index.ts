@@ -185,6 +185,7 @@ aptRoutes.use(bearer()).post(
             );
         } catch (error) {
             if (error instanceof HttpError) {
+                console.error('Error creating apartment: ' + error.message);
                 return new Response(`{\"message\":${error.message}}`, {
                     status: error.statusCode,
                     headers: { 'Content-Type': 'application/json' },

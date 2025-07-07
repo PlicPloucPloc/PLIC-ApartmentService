@@ -12,6 +12,7 @@ import {
 } from '../data/apartments';
 import request from '../routes/requests/request';
 import apartment_info from '../models/apartment_info';
+import { addApartmentNode } from '../data/likes';
 
 async function readApartmentsInfoById(bearer: string, id: number): Promise<apartment_info> {
     const userId = await getUser(bearer);
@@ -70,12 +71,14 @@ async function readApartmentsInfosByOwner(
 
 async function createApartment(bearer: string, req: request): Promise<void> {
     const userId = await getUser(bearer);
+    console.log("Request to create apartment: ", req);
 
     if (!userId) {
         throw HttpError.Unauthorized('User do not exist');
     }
-
+    console.log('User ID: ' + userId);
     const obj = await setApartment(userId);
+    console.log('Created apartment with ID: ' + obj);
     const new_apt = new apartment_info(
         obj,
         req.name,
@@ -96,8 +99,10 @@ async function createApartment(bearer: string, req: request): Promise<void> {
     );
     try {
         await setApartmentInfo(new_apt);
+        await addApartmentNode(bearer, new_apt.apartment_id);
     } catch (error) {
         deleteApartmentInfo(obj);
+        deleteApartment(bearer, obj);
     }
     console.log('Created apartment: ' + new_apt.apartment_id);
 }

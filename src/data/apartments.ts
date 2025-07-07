@@ -99,11 +99,13 @@ async function setApartment(userId: string): Promise<number> {
         .insert([
             {
                 owner_id: userId,
+                platform_id: 'swappart',
             },
         ])
         .select();
 
     if (error) {
+        console.error('Error creating apartment:', error.message);
         throw new Error(`Error creating apartment: ${error.message}`);
     }
     return data[0].id;
