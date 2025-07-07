@@ -12,7 +12,7 @@ import {
 } from '../data/apartments';
 import request from '../routes/requests/request';
 import apartment_info from '../models/apartment_info';
-import { addApartmentNode } from '../data/likes';
+import { addApartmentNode, getApartmentIdNoRelations } from '../data/likes';
 
 async function readApartmentsInfoById(bearer: string, id: number): Promise<apartment_info> {
     const userId = await getUser(bearer);
@@ -41,6 +41,31 @@ async function readApartmentsInfoPaginated(
     const apt_infos = await getApartmentsInfoPaginated(offset, limit);
 
     return apt_infos;
+}
+
+async function readApartmentsInfosWithNoRelations(bearer: string, offset: number, limit: number): Promise<apartment_info[]> {
+    const userId = await getUser(bearer);
+    if (!userId) {
+        throw HttpError.Unauthorized('User not found or Unauthorized');
+    }
+
+    const apt_ids = await getApartmentIdNoRelations(bearer, offset, limit);
+    if (!apt_ids || apt_ids.length === 0) {
+        throw HttpError.NotFound('No apartments found for this user');
+    }
+
+    const apt_infos = [];
+    for (let i = 0; i < apt_ids.length; i++) {
+        console.log('Fetching apt: ' + apt_ids[i]);
+        const apt_info = await getApartmentInfoById(apt_ids[i]);
+        if (!apt_info) {
+            throw HttpError.NotFound('Apartment info not found for this user');
+        }
+        apt_infos.push(apt_info);
+    }
+
+    return apt_infos;
+
 }
 
 async function readApartmentsInfosByOwner(
@@ -143,4 +168,5 @@ export {
     readApartmentsInfosByOwner,
     readApartmentsInfoPaginated,
     readApartmentsInfoById,
+    readApartmentsInfosWithNoRelations
 };
