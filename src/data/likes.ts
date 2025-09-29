@@ -1,6 +1,7 @@
 import { HttpError } from 'elysia-http-error';
 
 async function addApartmentNode(bearer: String, aptId: Number): Promise<string> {
+    console.log('Add apt node: ' + aptId);
     const userUrl = (process.env.LIKE_URL || 'http://localhost:3000') + '/aptNode';
     const request = new Request(userUrl, {
         method: 'post',
@@ -20,7 +21,6 @@ async function addApartmentNode(bearer: String, aptId: Number): Promise<string> 
         console.error(content.message);
         throw HttpError.Forbidden('Like Service: ' + content.message);
     }
-    console.log('Content: ' + content);
     if (content === null) {
         console.error('Unable to reach like service');
         throw HttpError.ServiceUnavailable('Like Service: No response from user service');

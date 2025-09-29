@@ -127,10 +127,13 @@ async function createApartment(bearer: string, req: request): Promise<void> {
     );
     try {
         await setApartmentInfo(new_apt);
+        console.log('Created apartment info for apartment');
         await addApartmentNode(bearer, new_apt.apartment_id);
     } catch (error) {
+        console.error('Error creating apartment info: ', error);
         deleteApartmentInfo(obj);
         deleteApartment(bearer, obj);
+        throw HttpError.Internal('Error creating apartment info : ' + error);
     }
     console.log('Created apartment: ' + new_apt.apartment_id);
 }
