@@ -5,6 +5,7 @@ import {
     readApartmentsInfoById,
     readApartmentsInfoPaginated,
     readApartmentsInfosByOwner,
+    readApartmentsInfosWithNoRelations,
     updateApartment,
 } from '../services/apartments_service';
 import bearer from '@elysiajs/bearer';
@@ -159,6 +160,38 @@ aptRoutes.use(bearer()).get(
     },
 );
 
+aptRoutes.use(bearer()).get(
+    '/noRelations',
+    async ({ bearer, query }) => {
+        try {
+            const offset = query.offset ? parseInt(query.offset) : 0;
+            const limit = query.limit ? parseInt(query.limit) : 10;
+            return await readApartmentsInfosWithNoRelations(bearer, offset, limit);
+        } catch (error) {
+            if (error instanceof HttpError) {
+                return new Response(`{\"message\":${error.message}}`, {
+                    status: error.statusCode,
+                    headers: { 'Content-Type': 'application/json' },
+                });
+            }
+            throw error;
+        }
+    },
+    {
+        beforeHandle({ bearer, set }) {
+            if (!bearer) {
+                console.log('Bearer not found');
+                set.headers['WWW-Authenticate'] = `Bearer realm='sign', error="invalid_request"`;
+
+                return new Response(`{\"message\": \"Bearer not found or invalid"}`, {
+                    status: 401,
+                    headers: { 'Content-Type': 'application/json' },
+                });
+            }
+        },
+    },
+);
+
 aptRoutes.use(bearer()).post(
     '/',
     async ({ bearer, body }) => {
@@ -185,6 +218,7 @@ aptRoutes.use(bearer()).post(
             );
         } catch (error) {
             if (error instanceof HttpError) {
+                console.error('Error creating apartment: ' + error.message);
                 return new Response(`{\"message\":${error.message}}`, {
                     status: error.statusCode,
                     headers: { 'Content-Type': 'application/json' },
@@ -193,7 +227,7 @@ aptRoutes.use(bearer()).post(
             throw error;
         }
         return new Response('{"status":"OK"}', {
-            status: 200,
+            status: 201,
             headers: { 'Content-Type': 'application/json' },
         });
     },
