@@ -22,7 +22,6 @@ async function getUser(bearer: String): Promise<string> {
     }
 
     const content = await resp.json();
-    console.log('Content: ' + content);
     if (content === null) {
         console.error('Unable to reach user service');
         throw HttpError.ServiceUnavailable('User Service: No response from user service');
