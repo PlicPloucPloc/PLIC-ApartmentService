@@ -160,6 +160,8 @@ async function updateApartment(bearer: string, apartment_info: apartment_info) {
     if (apt.owner_id != userId) {
         throw HttpError.Unauthorized('Apartment not owned');
     }
+    var estimated_price : number = await estimatePrice(bearer, apartment_info);
+    apartment_info.estimated_price = estimated_price;
     await updateApartmentInfo(apartment_info);
     console.log('Updated apartment: ' + apt.apartment_id);
 }

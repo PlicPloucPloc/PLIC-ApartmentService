@@ -345,13 +345,14 @@ aptRoutes.use(bearer()).put(
                     body.energy_class,
                     body.available_from,
                     body.rent,
+                    0,
                     body.type,
                     body.ges,
                     body.description,
                     body.number_of_rooms,
                     body.number_of_bedrooms,
                     body.floor,
-                    body.elevator,
+                    body.has_elevator,
                     body.parking_spaces,
                     body.number_of_bathrooms,
                     body.heating_type,
@@ -380,18 +381,15 @@ aptRoutes.use(bearer()).put(
             apartment_id: t.Number({
                 required: true,
             }),
-            name: t.String({
-                required: true,
-            }),
-            location: t.String({
-                required: true,
+            name: t.String({ 
+                required: false,
             }),
             is_furnished: t.Boolean({
                 required: false,
                 default: false,
             }),
             surface: t.Number({
-                required: true,
+                required: false,
             }),
             energy_class: t.String({
                 required: false,
@@ -399,13 +397,13 @@ aptRoutes.use(bearer()).put(
                 default: 'G',
             }),
             available_from: t.Date({
-                required: true,
+                required: false,
             }),
             rent: t.Number({
-                required: true,
+                required: false,
             }),
             type: t.String({
-                required: true,
+                required: false,
                 enum: ['apartment', 'house', 'condo'],
             }),
             ges: t.String({
@@ -417,15 +415,18 @@ aptRoutes.use(bearer()).put(
                 required: false,
             }),
             number_of_rooms: t.Number({
-                required: true,
-            }),
-            number_of_bedrooms: t.Number({
-                required: true,
-            }),
-            floor: t.Number({
                 required: false,
             }),
-            elevator: t.Boolean({
+            location: t.String({
+                required: false,
+            }),
+            number_of_bedrooms: t.Number({
+                required: false,
+            }),
+            has_elevator: t.Boolean({
+                required: false,
+            }),
+            floor: t.Number({
                 required: false,
             }),
             parking_spaces: t.Number({
