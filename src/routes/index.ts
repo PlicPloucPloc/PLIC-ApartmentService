@@ -10,8 +10,8 @@ import {
 } from '../services/apartments_service';
 import bearer from '@elysiajs/bearer';
 import { HttpError } from 'elysia-http-error';
-import request from './requests/request';
-import apartment_info from '../models/apartment_info';
+import { request } from './requests/request';
+import { apartment_info } from '../models/apartment_info';
 
 const aptRoutes = new Elysia();
 
@@ -212,8 +212,14 @@ aptRoutes.use(bearer()).post(
                     body.number_of_rooms,
                     body.number_of_bedrooms,
                     body.floor,
-                    body.elevator,
+                    body.has_elevator,
                     body.parking_spaces,
+                    body.number_of_bathrooms,
+                    body.heating_type,
+                    body.heating_mod,
+                    body.construction_year,
+                    body.number_of_floors,
+                    body.orientation,
                 ),
             );
         } catch (error) {
@@ -233,32 +239,29 @@ aptRoutes.use(bearer()).post(
     },
     {
         body: t.Object({
-            name: t.String({
-                required: true,
-            }),
-            location: t.String({
-                required: true,
+            name: t.String({ 
+                required: false,
             }),
             is_furnished: t.Boolean({
                 required: false,
                 default: false,
             }),
             surface: t.Number({
-                required: true,
+                required: false,
             }),
             energy_class: t.String({
                 required: false,
                 enum: ['A', 'B', 'C', 'D', 'E', 'F', 'G'],
                 default: 'G',
             }),
-            available_from: t.String({
-                required: true,
+            available_from: t.Date({
+                required: false,
             }),
             rent: t.Number({
-                required: true,
+                required: false,
             }),
             type: t.String({
-                required: true,
+                required: false,
                 enum: ['apartment', 'house', 'condo'],
             }),
             ges: t.String({
@@ -270,20 +273,47 @@ aptRoutes.use(bearer()).post(
                 required: false,
             }),
             number_of_rooms: t.Number({
-                required: true,
-            }),
-            number_of_bedrooms: t.Number({
-                required: true,
-            }),
-            floor: t.Number({
                 required: false,
             }),
-            elevator: t.Boolean({
+            location: t.String({
+                required: false,
+            }),
+            number_of_bedrooms: t.Number({
+                required: false,
+            }),
+            has_elevator: t.Boolean({
+                required: false,
+            }),
+            floor: t.Number({
                 required: false,
             }),
             parking_spaces: t.Number({
                 required: false,
                 default: 0,
+            }),
+            number_of_bathrooms: t.Number({
+                required: false,
+                default: 1,
+            }),
+            heating_type: t.String({
+                required: false,
+                default: 'electric',
+            }),
+            heating_mod: t.String({
+                required: false,
+                default: 'individual',
+            }),
+            construction_year: t.Number({
+                required: false,
+                default: new Date().getFullYear(),
+            }),
+            number_of_floors: t.Number({
+                required: false,
+                default: 1,
+            }),
+            orientation: t.String({
+                required: false,
+                default: 'N/A',
             }),
         }),
         beforeHandle({ bearer, set }) {
@@ -323,6 +353,12 @@ aptRoutes.use(bearer()).put(
                     body.floor,
                     body.elevator,
                     body.parking_spaces,
+                    body.number_of_bathrooms,
+                    body.heating_type,
+                    body.heating_mod,
+                    body.construction_year,
+                    body.number_of_floors,
+                    body.orientation,
                 ),
             );
             return new Response('{"status":"OK"}', {
@@ -362,7 +398,7 @@ aptRoutes.use(bearer()).put(
                 enum: ['A', 'B', 'C', 'D', 'E', 'F', 'G'],
                 default: 'G',
             }),
-            available_from: t.String({
+            available_from: t.Date({
                 required: true,
             }),
             rent: t.Number({
@@ -395,6 +431,30 @@ aptRoutes.use(bearer()).put(
             parking_spaces: t.Number({
                 required: false,
                 default: 0,
+            }),
+            number_of_bathrooms: t.Number({
+                required: false,
+                default: 1,
+            }),
+            heating_type: t.String({
+                required: false,
+                default: 'electric',
+            }),
+            heating_mod: t.String({
+                required: false,
+                default: 'individual',
+            }),
+            construction_year: t.Number({
+                required: false,
+                default: new Date().getFullYear(),
+            }),
+            number_of_floors: t.Number({
+                required: false,
+                default: 1,
+            }),
+            orientation: t.String({
+                required: false,
+                default: 'N/A',
             }),
         }),
         beforeHandle({ bearer, set }) {

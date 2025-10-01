@@ -10,9 +10,10 @@ import {
     setApartmentInfo,
     updateApartmentInfo,
 } from '../data/apartments';
-import request from '../routes/requests/request';
-import apartment_info from '../models/apartment_info';
 import { addApartmentNode, getApartmentIdNoRelations } from '../data/likes';
+import { apartment_info } from '../models/apartment_info';
+import { request } from '../routes/requests/request';
+import { estimatePrice } from './price_estimation_service';
 
 async function readApartmentsInfoById(bearer: string, id: number): Promise<apartment_info> {
     const userId = await getUser(bearer);
@@ -107,6 +108,8 @@ async function createApartment(bearer: string, req: request): Promise<void> {
     console.log('User ID: ' + userId);
     const obj = await setApartment(userId);
     console.log('Created apartment with ID: ' + obj);
+    var estimated_price : number = await estimatePrice(bearer, req);
+    console.log('Estimated price: ' + estimated_price);
     const new_apt = new apartment_info(
         obj,
         req.name,
@@ -116,14 +119,21 @@ async function createApartment(bearer: string, req: request): Promise<void> {
         req.energy_class,
         req.available_from,
         req.rent,
+        estimated_price,
         req.type,
         req.ges,
         req.description,
         req.number_of_rooms,
-        req.number_of_bed_rooms,
+        req.number_of_bedrooms,
         req.floor,
-        req.elevator,
+        req.has_elevator,
         req.parking_spaces,
+        req.number_of_bathrooms,
+        req.heating_type,
+        req.heating_mod,
+        req.construction_year,
+        req.number_of_floors,
+        req.orientation
     );
     try {
         await setApartmentInfo(new_apt);
