@@ -30,14 +30,11 @@ async function addApartmentNode(bearer: String, aptId: number): Promise<string> 
 
 async function getApartmentIdNoRelations(
     bearer: string,
-    offset: number,
     limit: number,
 ): Promise<number[]> {
     const likeUrl =
         (process.env.LIKE_URL || 'http://localhost:3000') +
-        '/noRelations?skip=' +
-        offset +
-        '&limit=' +
+        '/noRelations?limit=' +
         limit;
     const request = new Request(likeUrl, {
         method: 'get',

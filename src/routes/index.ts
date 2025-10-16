@@ -164,9 +164,8 @@ aptRoutes.use(bearer()).get(
     '/noRelations',
     async ({ bearer, query }) => {
         try {
-            const offset = query.offset ? parseInt(query.offset) : 0;
             const limit = query.limit ? parseInt(query.limit) : 10;
-            return await readApartmentsInfosWithNoRelations(bearer, offset, limit);
+            return await readApartmentsInfosWithNoRelations(bearer, limit);
         } catch (error) {
             if (error instanceof HttpError) {
                 return new Response(`{\"message\":${error.message}}`, {

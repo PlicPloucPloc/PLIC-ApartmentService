@@ -46,15 +46,14 @@ async function readApartmentsInfoPaginated(
 
 async function readApartmentsInfosWithNoRelations(
     bearer: string,
-    offset: number,
-    limit: number,
+    limit: number
 ): Promise<apartment_info[]> {
     const userId = await getUser(bearer);
     if (!userId) {
         throw HttpError.Unauthorized('User not found or Unauthorized');
     }
 
-    const apt_ids = await getApartmentIdNoRelations(bearer, offset, limit);
+    const apt_ids = await getApartmentIdNoRelations(bearer, limit);
     if (!apt_ids) {
         throw HttpError.NotFound('No apartments found for this user');
     }
