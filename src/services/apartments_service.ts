@@ -7,6 +7,7 @@ import { apartment_info } from '../models/apartment_info';
 import { deleteApartmentInfo, getApartmentInfoById, getApartmentsInfoPaginated, setApartmentInfo, updateApartmentInfo } from '../data/apartments_infos';
 import { getApartmentById, getApartmentsByOwnerPaginated, setApartment } from '../data/apartments';
 import { setCoordinatesForApartmentId } from './coordinates_service';
+import { Filters, filters } from '../models/filters';
 
 export async function readApartmentsInfoById(bearer: string, id: number): Promise<apartment_info> {
     const userId = await getUser(bearer);
@@ -39,6 +40,7 @@ export async function readApartmentsInfoPaginated(
 
 export async function readApartmentsInfosWithNoRelations(
     bearer: string,
+    filters: Filters,
     limit: number
 ): Promise<apartment_info[]> {
     const userId = await getUser(bearer);
@@ -46,7 +48,7 @@ export async function readApartmentsInfosWithNoRelations(
         throw HttpError.Unauthorized('User not found or Unauthorized');
     }
 
-    const apt_ids = await getApartmentIdNoRelations(bearer, limit);
+    const apt_ids = await getApartmentIdNoRelations(bearer, filters, limit);
     if (!apt_ids) {
         throw HttpError.NotFound('No apartments found for this user');
     }

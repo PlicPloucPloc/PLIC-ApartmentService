@@ -13,6 +13,7 @@ import { HttpError } from 'elysia-http-error';
 import { request } from './requests/request';
 import { apartment_info } from '../models/apartment_info';
 import { getCoordinatesByApartmentId } from '../services/coordinates_service';
+import { Filters } from '../models/filters';
 
 const aptRoutes = new Elysia();
 
@@ -166,7 +167,13 @@ aptRoutes.use(bearer()).get(
     async ({ bearer, query }) => {
         try {
             const limit = query.limit ? parseInt(query.limit) : 10;
-            return await readApartmentsInfosWithNoRelations(bearer, limit);
+            const filters: Filters = new Filters(
+                query.rent ? parseInt(query.rent) : 850,
+                query.location ? query.location : "Paris",
+                query.size ? parseInt(query.size) : 20,
+                query.is_furnished === 'true' ? true : false,
+            )
+            return await readApartmentsInfosWithNoRelations(bearer, filters, limit);
         } catch (error) {
             if (error instanceof HttpError) {
                 return new Response(`{\"message\":${error.message}}`, {

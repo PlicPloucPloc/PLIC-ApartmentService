@@ -1,4 +1,5 @@
 import { HttpError } from 'elysia-http-error';
+import { Filters } from '../models/filters';
 
 async function addApartmentNode(bearer: String, aptId: number): Promise<string> {
     console.log('Add apt node: ' + aptId);
@@ -30,12 +31,13 @@ async function addApartmentNode(bearer: String, aptId: number): Promise<string> 
 
 async function getApartmentIdNoRelations(
     bearer: string,
+    filters: Filters,
     limit: number,
 ): Promise<number[]> {
     const likeUrl =
         (process.env.LIKE_URL || 'http://localhost:3000') +
         '/noRelations?limit=' +
-        limit;
+        limit + '&location=' + filters.location + '&rent=' + filters.rent + '&size=' + filters.size + '&is_furnished=' + filters.is_furnished;
     const request = new Request(likeUrl, {
         method: 'get',
         headers: {
