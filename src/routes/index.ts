@@ -12,6 +12,7 @@ import bearer from '@elysiajs/bearer';
 import { HttpError } from 'elysia-http-error';
 import { request } from './requests/request';
 import { apartment_info } from '../models/apartment_info';
+import { getCoordinatesByApartmentId } from '../services/coordinates_service';
 
 const aptRoutes = new Elysia();
 
@@ -166,6 +167,36 @@ aptRoutes.use(bearer()).get(
         try {
             const limit = query.limit ? parseInt(query.limit) : 10;
             return await readApartmentsInfosWithNoRelations(bearer, limit);
+        } catch (error) {
+            if (error instanceof HttpError) {
+                return new Response(`{\"message\":${error.message}}`, {
+                    status: error.statusCode,
+                    headers: { 'Content-Type': 'application/json' },
+                });
+            }
+            throw error;
+        }
+    },
+    {
+        beforeHandle({ bearer, set }) {
+            if (!bearer) {
+                console.log('Bearer not found');
+                set.headers['WWW-Authenticate'] = `Bearer realm='sign', error="invalid_request"`;
+
+                return new Response(`{\"message\": \"Bearer not found or invalid"}`, {
+                    status: 401,
+                    headers: { 'Content-Type': 'application/json' },
+                });
+            }
+        },
+    },
+);
+
+aptRoutes.use(bearer()).get(
+    '/coordinates',
+    async ({ bearer,query }) => {
+        try {
+            return await getCoordinatesByApartmentId(bearer, parseInt(query.apartment_id));
         } catch (error) {
             if (error instanceof HttpError) {
                 return new Response(`{\"message\":${error.message}}`, {

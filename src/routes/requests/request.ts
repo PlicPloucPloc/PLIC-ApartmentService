@@ -16,7 +16,7 @@ export class request {
     parking_spaces: number;
     number_of_bathrooms: number;
     heating_type: string;
-    heating_mod: string;
+    heating_mode: string;
     construction_year: number;
     number_of_floors: number;
     orientation: string;
@@ -38,7 +38,7 @@ export class request {
         parking_spaces: number,
         number_of_bathrooms: number,
         heating_type: string,
-        heating_mod: string,
+        heating_mode: string,
         construction_year: number,
         number_of_floors: number,
         orientation: string,
@@ -60,7 +60,7 @@ export class request {
         this.parking_spaces = parking_spaces;
         this.number_of_bathrooms = number_of_bathrooms;
         this.heating_type = heating_type;
-        this.heating_mod = heating_mod;
+        this.heating_mode = heating_mode;
         this.construction_year = construction_year;
         this.number_of_floors = number_of_floors;
         this.orientation = orientation;

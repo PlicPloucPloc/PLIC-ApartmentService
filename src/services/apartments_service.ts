@@ -1,21 +1,14 @@
 import { HttpError } from 'elysia-http-error';
 import { getUser } from '../data/users';
-import {
-    deleteApartmentInfo,
-    getApartmentById,
-    getApartmentInfoById,
-    getApartmentsByOwnerPaginated,
-    getApartmentsInfoPaginated,
-    setApartment,
-    setApartmentInfo,
-    updateApartmentInfo,
-} from '../data/apartments';
 import { addApartmentNode, getApartmentIdNoRelations } from '../data/likes';
-import { apartment_info } from '../models/apartment_info';
 import { request } from '../routes/requests/request';
 import { estimatePrice } from './price_estimation_service';
+import { apartment_info } from '../models/apartment_info';
+import { deleteApartmentInfo, getApartmentInfoById, getApartmentsInfoPaginated, setApartmentInfo, updateApartmentInfo } from '../data/apartments_infos';
+import { getApartmentById, getApartmentsByOwnerPaginated, setApartment } from '../data/apartments';
+import { setCoordinatesForApartmentId } from './coordinates_service';
 
-async function readApartmentsInfoById(bearer: string, id: number): Promise<apartment_info> {
+export async function readApartmentsInfoById(bearer: string, id: number): Promise<apartment_info> {
     const userId = await getUser(bearer);
     if (!userId) {
         throw HttpError.Unauthorized('User not found or Unauthorized');
@@ -29,7 +22,7 @@ async function readApartmentsInfoById(bearer: string, id: number): Promise<apart
     return apt_info;
 }
 
-async function readApartmentsInfoPaginated(
+export async function readApartmentsInfoPaginated(
     bearer: string,
     offset: number,
     limit: number,
@@ -44,7 +37,7 @@ async function readApartmentsInfoPaginated(
     return apt_infos;
 }
 
-async function readApartmentsInfosWithNoRelations(
+export async function readApartmentsInfosWithNoRelations(
     bearer: string,
     limit: number
 ): Promise<apartment_info[]> {
@@ -71,7 +64,7 @@ async function readApartmentsInfosWithNoRelations(
     return apt_infos;
 }
 
-async function readApartmentsInfosByOwner(
+export async function readApartmentsInfosByOwner(
     bearer: string,
     offset: number,
     limit: number,
@@ -97,7 +90,7 @@ async function readApartmentsInfosByOwner(
     return apt_infos;
 }
 
-async function createApartment(bearer: string, req: request): Promise<void> {
+export async function createApartment(bearer: string, req: request): Promise<void> {
     const userId = await getUser(bearer);
     console.log('Request to create apartment: ', req);
 
@@ -129,7 +122,7 @@ async function createApartment(bearer: string, req: request): Promise<void> {
         req.parking_spaces,
         req.number_of_bathrooms,
         req.heating_type,
-        req.heating_mod,
+        req.heating_mode,
         req.construction_year,
         req.number_of_floors,
         req.orientation
@@ -138,6 +131,8 @@ async function createApartment(bearer: string, req: request): Promise<void> {
         await setApartmentInfo(new_apt);
         console.log('Created apartment info for apartment');
         await addApartmentNode(bearer, new_apt.apartment_id);
+        await setCoordinatesForApartmentId(new_apt.apartment_id, new_apt.location);
+        
     } catch (error) {
         console.error('Error creating apartment info: ', error);
         deleteApartmentInfo(obj);
@@ -147,7 +142,7 @@ async function createApartment(bearer: string, req: request): Promise<void> {
     console.log('Created apartment: ' + new_apt.apartment_id);
 }
 
-async function updateApartment(bearer: string, apartment_info: apartment_info) {
+export async function updateApartment(bearer: string, apartment_info: apartment_info) {
     const userId = await getUser(bearer);
     if (!userId) {
         throw HttpError.Unauthorized('User not found or Unauthorized');
@@ -165,7 +160,7 @@ async function updateApartment(bearer: string, apartment_info: apartment_info) {
     console.log('Updated apartment: ' + apt.apartment_id);
 }
 
-async function deleteApartment(bearer: string, id: number): Promise<void> {
+export async function deleteApartment(bearer: string, id: number): Promise<void> {
     const userId = await getUser(bearer);
     if (!userId) {
         throw HttpError.Unauthorized('User not found or Unauthorized');
@@ -178,12 +173,3 @@ async function deleteApartment(bearer: string, id: number): Promise<void> {
     console.log('Deleted apartment: ' + id);
 }
 
-export {
-    createApartment,
-    updateApartment,
-    deleteApartment,
-    readApartmentsInfosByOwner,
-    readApartmentsInfoPaginated,
-    readApartmentsInfoById,
-    readApartmentsInfosWithNoRelations,
-};
