@@ -37,7 +37,7 @@ async function getApartmentIdNoRelations(
     const likeUrl =
         (process.env.LIKE_URL || 'http://localhost:3000') +
         '/noRelations?limit=' +
-        limit + '&location=' + filters.location + '&rent=' + filters.rent + '&size=' + filters.size + '&is_furnished=' + filters.is_furnished;
+        limit + '&location=' + filters.location + '&rent=' + filters.rent + '&min_size=' + filters.min_size + '&max_size=' + filters.max_size + '&is_furnished=' + filters.is_furnished;
     const request = new Request(likeUrl, {
         method: 'get',
         headers: {
