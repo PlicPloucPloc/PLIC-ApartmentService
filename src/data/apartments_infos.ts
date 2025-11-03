@@ -1,5 +1,6 @@
 import { supabase } from "../libs/supabase";
 import { apartment_info } from "../models/apartment_info";
+import { Filters } from "../models/filters";
 
 export async function getApartmentsInfoPaginated(
     offset: number,
@@ -23,6 +24,19 @@ export async function getApartmentInfoById(id: number): Promise<apartment_info |
         .select('*')
         .eq('apartment_id', id)
         .single();
+
+    if (error) {
+        throw new Error(`Error fetching apartment by ID: ${error.message}`);
+    }
+    return data;
+}
+
+export async function getApartmentInfoFiltered(filters: Filters, limit: number): Promise<apartment_info[]> {
+    const { data, error } = await supabase
+        .from('apartment_info')
+        .select('*')
+        .lte('rent', filters.rent)
+        .range(0, limit - 1);
 
     if (error) {
         throw new Error(`Error fetching apartment by ID: ${error.message}`);

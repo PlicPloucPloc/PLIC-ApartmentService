@@ -4,6 +4,7 @@ import { apartment_coordinates } from "../models/apartment_coordinates";
 import { getApartmentCoordinates, setApartmentCoordinates } from "../data/apartment_coordinates";
 import { getCoordinates } from "../data/openstreetmap";
 
+
 export async function getCoordinatesByApartmentId(bearer: string, apartment_id: number): Promise<{ lat: number; lon: number }> {
     console.log('Getting coordinates for apartment ID:', apartment_id);
     const userId = await getUser(bearer);
