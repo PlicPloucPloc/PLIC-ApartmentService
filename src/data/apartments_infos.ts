@@ -31,13 +31,18 @@ export async function getApartmentInfoById(id: number): Promise<apartment_info |
     return data;
 }
 
-export async function getApartmentInfoFiltered(filters: Filters, limit: number): Promise<apartment_info[]> {
-    const { data, error } = await supabase
-        .from('apartment_info')
-        .select('*')
-        .lte('rent', filters.rent)
-        .range(0, limit - 1);
-
+export async function getApartmentInfoFiltered(filters: Filters, lat: number, lon: number, limit: number, dislikedIds: number[]): Promise<apartment_info[]> {
+    const { data, error } = await supabase.rpc('get_apartment_recommendations', {
+      p_lat: lat,
+      p_lon: lon,
+      p_max_distance_meters: 30000,
+      p_excluded_ids: dislikedIds,
+      p_desired_count: limit,
+      p_is_furnished: filters.is_furnished,
+      p_min_surface: filters.min_size,
+      p_max_surface: filters.max_size,
+      p_max_price: filters.rent,
+    });
     if (error) {
         throw new Error(`Error fetching apartment by ID: ${error.message}`);
     }

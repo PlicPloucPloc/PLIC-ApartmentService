@@ -1,6 +1,6 @@
 import { HttpError } from 'elysia-http-error';
 import { getUser } from '../data/users';
-import { addApartmentNode, getApartmentIdNoRelations } from '../data/likes';
+import { addApartmentNode, getApartmentIdAllRelations, orderApartmentIds } from '../data/likes';
 import { request } from '../routes/requests/request';
 import { estimatePrice } from './price_estimation_service';
 import { apartment_info } from '../models/apartment_info';
@@ -8,9 +8,13 @@ import { deleteApartmentInfo, getApartmentInfoById, getApartmentInfoFiltered, ge
 import { getApartmentById, getApartmentsByOwnerPaginated, setApartment } from '../data/apartments';
 import { setCoordinatesForApartmentId } from './coordinates_service';
 import { Filters } from '../models/filters';
-import { getApartmentCoordinates } from '../data/apartment_coordinates';
 import { coordinates } from '../models/coordinates';
 import { getCoordinates } from '../data/openstreetmap';
+import { getLogger } from './logger';
+import { Logger } from 'winston';
+import { relation } from '../models/relations';
+
+const logger: Logger = getLogger('Apartments');
 
 export async function readApartmentsInfoById(bearer: string, id: number): Promise<apartment_info> {
     const userId = await getUser(bearer);
@@ -56,36 +60,6 @@ export async function readApartmentsInfoPaginated(
     return apt_infos;
 }
 
-export function getDistance(origin: coordinates , destination: coordinates): number {
-    const R = 6371; // Radius of the earth in km
-
-    // Convert degrees to radians
-    const toRad = (value: number) => (value * Math.PI) / 180;
-    var lat1: number = toRad(origin.lat);
-    var lon1: number = toRad(origin.lon);
-    var lat2 = toRad(destination.lat);
-    var lon2 = toRad(destination.lon);
-    
-    // Calculate distance using Haversine formula
-    const dLat = Math.pow(Math.sin((lat2 - lat1)/2), 2);
-    const dLon = Math.pow(Math.sin((lon2 - lon1)/2), 2);
-    const dist = R * 2 * Math.asin(Math.sqrt(dLat + Math.cos(lat1) * Math.cos(lat2) * dLon));
-
-    return dist;
-}
-
-async function filterDistance(apt: apartment_info,
-                                destination: coordinates,
-                                ): Promise<number> {
-    var origin: coordinates = await getApartmentCoordinates(apt.apartment_id);
-    var dist: number = getDistance(origin, destination);
-    if (dist > 30) {
-        return -1;
-    }
-    return apt.apartment_id;
-}
-
-
 export async function readApartmentsInfosWithNoRelations(
     bearer: string,
     filters: Filters,
@@ -96,52 +70,27 @@ export async function readApartmentsInfosWithNoRelations(
         throw HttpError.Unauthorized('User not found or Unauthorized');
     }
     var coordinates: coordinates = await getCoordinates(filters.location);
-    var apts: apartment_info[] = (await getApartmentInfoFiltered(filters, limit*5));
-    console.log('Apartment: ', apts);
-    var apts_filtered: apartment_info[] = [];
-    for (var apt of apts) {
-        if (await filterDistance(apt, coordinates) == -1) {
-            apts_filtered.push(apt);
-        }
-    }; 
-    var rec_apt_ids = await getApartmentIdNoRelations(bearer, limit);
-    console.log('Apartment: ', apts_filtered);
-    console.log('Apartment Recommended: ', rec_apt_ids);
-    if (!apts_filtered || !rec_apt_ids) {
-        throw HttpError.NotFound('No apartments found for this user');
+    var aptRel: relation[] = await getApartmentIdAllRelations(bearer);
+    aptRel.forEach(apt => logger.info(`Apartment relation: ${apt.apt.apartment_id}`));
+    var apts: apartment_info[] = (await getApartmentInfoFiltered(filters, coordinates.lat, coordinates.lon, limit*5, aptRel.map(rel => rel.apt.apartment_id)));
+    apts.forEach(apt => logger.info(`Apartment: ${apt.apartment_id}`));
+    var ordered_aptIds: number[] = await orderApartmentIds(bearer, apts.map(apt => apt.apartment_id));
+    ordered_aptIds.forEach(apt => logger.info(`Apartment ordered: ${apt}`));
+    var ordered_apts: apartment_info[] = [];
+    for (let i = 0; i < limit; i++){
+        ordered_apts.push(apts.find(apt => apt.apartment_id == ordered_aptIds[i])!);
     }
-    var apartments: apartment_info[] = [];
-    for (var apt of apts_filtered){
-        if (rec_apt_ids.includes(apt.apartment_id) ){
-            console.log('OK');
-            apartments.push(apt);
-        }
-    }
-    if (apartments.length < limit){
-       for (var apt of apts_filtered){
-           if (apartments.length >= limit){
-               break;
-           }
-           if (!apartments.includes(apt)){
-               apartments.push(apt)
-           }
-       } 
-    }
-    return apartments;
+    return ordered_apts;
 }
 
 export async function createApartment(bearer: string, req: request): Promise<void> {
     const userId = await getUser(bearer);
-    console.log('Request to create apartment: ', req);
 
     if (!userId) {
         throw HttpError.Unauthorized('User do not exist');
     }
-    console.log('User ID: ' + userId);
     const obj = await setApartment(userId);
-    console.log('Created apartment with ID: ' + obj);
     var estimated_price : number = await estimatePrice(bearer, req);
-    console.log('Estimated price: ' + estimated_price);
     const new_apt = new apartment_info(
         obj,
         req.name,
@@ -169,17 +118,14 @@ export async function createApartment(bearer: string, req: request): Promise<voi
     );
     try {
         await setApartmentInfo(new_apt);
-        console.log('Created apartment info for apartment');
         await addApartmentNode(bearer, new_apt.apartment_id);
         await setCoordinatesForApartmentId(new_apt.apartment_id, new_apt.location);
         
     } catch (error) {
-        console.error('Error creating apartment info: ', error);
         deleteApartmentInfo(obj);
         deleteApartment(bearer, obj);
         throw HttpError.Internal('Error creating apartment info : ' + error);
     }
-    console.log('Created apartment: ' + new_apt.apartment_id);
 }
 
 export async function updateApartment(bearer: string, apartment_info: apartment_info) {
@@ -197,7 +143,6 @@ export async function updateApartment(bearer: string, apartment_info: apartment_
     var estimated_price : number = await estimatePrice(bearer, apartment_info);
     apartment_info.estimated_price = estimated_price;
     await updateApartmentInfo(apartment_info);
-    console.log('Updated apartment: ' + apt.apartment_id);
 }
 
 export async function deleteApartment(bearer: string, id: number): Promise<void> {
@@ -210,6 +155,5 @@ export async function deleteApartment(bearer: string, id: number): Promise<void>
         throw HttpError.Forbidden('Apartment not owned');
     }
     await deleteApartmentInfo(id);
-    console.log('Deleted apartment: ' + id);
 }
 

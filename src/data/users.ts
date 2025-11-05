@@ -1,7 +1,8 @@
 import { HttpError } from 'elysia-http-error';
 
 async function getUser(bearer: String): Promise<string> {
-    const userUrl = (process.env.USER_URL || 'http://localhost:3000') + '/id';
+    console.log('WTF');
+    const userUrl = (process.env.USER_URL || 'http://localhost:3000') + '/';
     const request = new Request(userUrl, {
         method: 'get',
         headers: {
@@ -10,6 +11,7 @@ async function getUser(bearer: String): Promise<string> {
         },
     });
     const resp = await fetch(request);
+    console.log('resp: ', resp);
     if (!resp) {
         console.error('No response from user service');
         throw HttpError.ServiceUnavailable('User Service: No response from user service');
