@@ -2,17 +2,17 @@ import { HttpError } from 'elysia-http-error';
 import { getUser } from '../data/users';
 import { addApartmentNode, getApartmentIdAllRelations, orderApartmentIds } from '../data/likes';
 import { request } from '../routes/requests/request';
-import { estimatePrice } from './price_estimation_service';
 import { apartment_info } from '../models/apartment_info';
 import { deleteApartmentInfo, getApartmentInfoById, getApartmentInfoFiltered, getApartmentsInfoPaginated, setApartmentInfo, updateApartmentInfo } from '../data/apartments_infos';
 import { getApartmentById, getApartmentsByOwnerPaginated, setApartment } from '../data/apartments';
-import { setCoordinatesForApartmentId } from './coordinates_service';
 import { Filters } from '../models/filters';
 import { coordinates } from '../models/coordinates';
 import { getCoordinates } from '../data/openstreetmap';
 import { getLogger } from './logger';
 import { Logger } from 'winston';
 import { relation } from '../models/relations';
+import { estimatePrice } from './priceEstimationService';
+import { setCoordinatesForApartmentId } from './coordinatesService';
 
 const logger: Logger = getLogger('Apartments');
 

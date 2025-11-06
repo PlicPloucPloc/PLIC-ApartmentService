@@ -1,19 +1,11 @@
 import Elysia, { t } from 'elysia';
-import {
-    createApartment,
-    deleteApartment,
-    readApartmentsInfoById,
-    readApartmentsInfoPaginated,
-    readApartmentsInfosByOwner,
-    readApartmentsInfosWithNoRelations,
-    updateApartment,
-} from '../services/apartments_service';
 import bearer from '@elysiajs/bearer';
 import { HttpError } from 'elysia-http-error';
 import { request } from './requests/request';
 import { apartment_info } from '../models/apartment_info';
-import { getCoordinatesByApartmentId } from '../services/coordinates_service';
 import { Filters } from '../models/filters';
+import { createApartment, deleteApartment, readApartmentsInfoById, readApartmentsInfoPaginated, readApartmentsInfosByOwner, readApartmentsInfosWithNoRelations, updateApartment } from '../services/apartmentsService';
+import { getCoordinatesByApartmentId } from '../services/coordinatesService';
 
 const aptRoutes = new Elysia();
 

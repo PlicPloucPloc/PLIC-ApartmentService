@@ -20,7 +20,7 @@ export async function estimatePrice(
         throw HttpError.Unauthorized('User not found or Unauthorized');
     }
     
-    if (apt_info.heating_mod == null || apt_info.heating_mod === 'individual' ) {
+    if (apt_info.heating_mode == null || apt_info.heating_mode === 'individual' ) {
         var dpe_kwh = convertDpeTokWh(apt_info.energy_class);
 
         var price_elec: number = await getPricePerElecRate('EDF_bleu');
@@ -48,7 +48,7 @@ export async function estimatePriceUpdate(
         throw HttpError.Unauthorized('User not found or Unauthorized');
     }
     
-    if (apt_info.heating_mod == null || apt_info.heating_mod === 'individual' ) {
+    if (apt_info.heating_mode == null || apt_info.heating_mode === 'individual' ) {
         var dpe_kwh = convertDpeTokWh(apt_info.energy_class);
 
         var price_elec: number = await getPricePerElecRate('EDF_bleu');
