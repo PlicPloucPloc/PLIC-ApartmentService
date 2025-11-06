@@ -1,5 +1,9 @@
+import { Logger } from "winston";
 import { supabase } from "../libs/supabase";
 import { apartment_coordinates } from "../models/apartment_coordinates";
+import { getLogger } from "../services/logger";
+
+const logger: Logger = getLogger('CoordinatesData');
 
 export async function setApartmentCoordinates(aptCoord: apartment_coordinates): Promise<void> {
     const { data, error } = await supabase.from('apartment_coordinates').insert([aptCoord]).select();
@@ -10,7 +14,7 @@ export async function setApartmentCoordinates(aptCoord: apartment_coordinates): 
 }
 
 export async function getApartmentCoordinates(aptId: number): Promise<apartment_coordinates> {
-    console.log("Fetching coordinates for apartment ID:", aptId);
+    logger.info(`Fetching coordinates for apartment ID: ${aptId}`);
     const { data, error } = await supabase
         .from('apartment_coordinates')
         .select('*')

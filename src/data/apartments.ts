@@ -49,7 +49,6 @@ export async function setApartment(userId: string): Promise<number> {
         .select();
 
     if (error) {
-        console.error('Error creating apartment:', error.message);
         throw new Error(`Error creating apartment: ${error.message}`);
     }
     return data[0].id;

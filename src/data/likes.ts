@@ -1,9 +1,12 @@
 import { HttpError } from 'elysia-http-error';
-import { apartment_info } from '../models/apartment_info';
 import { relation } from '../models/relations';
+import { getLogger } from '../services/logger';
+import { Logger } from 'winston';
 
-async function addApartmentNode(bearer: String, aptId: number): Promise<string> {
-    console.log('Add apt node: ' + aptId);
+const logger: Logger = getLogger(`LikeData`);
+
+export async function addApartmentNode(bearer: String, aptId: number): Promise<string> {
+    logger.info(`Add apt node: ${aptId}`);
     const likeUrl = (process.env.LIKE_URL || 'http://localhost:3000') + '/aptNode';
     const request = new Request(likeUrl, {
         method: 'post',
@@ -15,22 +18,19 @@ async function addApartmentNode(bearer: String, aptId: number): Promise<string> 
     });
     const resp = await fetch(request);
     if (!resp) {
-        console.error('No response from like service');
         throw HttpError.ServiceUnavailable('Like Service: No response from like service');
     }
     const content = await resp.json();
     if (resp.status == 403) {
-        console.error(content.message);
         throw HttpError.Forbidden('Like Service: ' + content.message);
     }
     if (content === null) {
-        console.error('Unable to reach like service');
         throw HttpError.ServiceUnavailable('Like Service: No response from like service');
     }
     return content.id;
 }
 
-async function getApartmentIdNoRelations(
+export async function getApartmentIdNoRelations(
     bearer: string,
     limit: number,
 ): Promise<number[]> {
@@ -47,17 +47,13 @@ async function getApartmentIdNoRelations(
     });
     const resp = await fetch(request);
     if (!resp) {
-        console.error('No response from like service');
         throw HttpError.ServiceUnavailable('Like Service: No response from like service');
     }
     const content = await resp.json();
     if (resp.status == 403) {
-        console.error(content.message);
         throw HttpError.Forbidden('Like Service: ' + content.message);
     }
-    console.log('Content: ' + content);
     if (content === null) {
-        console.error('Unable to reach like service');
         throw HttpError.ServiceUnavailable('Like Service: No response from like service');
     }
     return content;
@@ -78,23 +74,19 @@ export async function getApartmentIdAllRelations(
     });
     const resp = await fetch(request);
     if (!resp) {
-        console.error('No response from like service');
         throw HttpError.ServiceUnavailable('Like Service: No response from like service');
     }
     const content = await resp.json();
     if (resp.status == 403) {
-        console.error(content.message);
         throw HttpError.Forbidden('Like Service: ' + content.message);
     }
-    console.log('Content: ' + content);
     if (content === null) {
-        console.error('Unable to reach like service');
         throw HttpError.ServiceUnavailable('Like Service: No response from like service');
     }
     return content;
 }
 
-async function orderApartmentIds(
+export async function orderApartmentIds(
     bearer: string,
     aptIds: number[],
 ): Promise<number[]> {
@@ -111,24 +103,17 @@ async function orderApartmentIds(
     });
     const resp = await fetch(request);
     if (!resp) {
-        console.error('No response from like service');
         throw HttpError.ServiceUnavailable('Like Service: No response from like service');
     }
     const content = await resp.json();
     if (resp.status == 403) {
-        console.error('Forbidden: ', content.message);
         throw HttpError.Forbidden('Like Service: ' + content.message);
     }
     if (resp.status == 500) {
-        console.error('Internal Error: ', content.message);
         throw HttpError.Internal('Like Service: ' + content.message);
     }
-    console.log('Content: ' + content);
     if (content === null) {
-        console.error('Unable to reach like service');
         throw HttpError.ServiceUnavailable('Like Service: No response from like service');
     }
     return content;
 }
-
-export { addApartmentNode, getApartmentIdNoRelations, orderApartmentIds };

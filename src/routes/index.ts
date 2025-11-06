@@ -1,11 +1,12 @@
 import Elysia, { t } from 'elysia';
 import bearer from '@elysiajs/bearer';
-import { HttpError } from 'elysia-http-error';
 import { request } from './requests/request';
 import { apartment_info } from '../models/apartment_info';
 import { Filters } from '../models/filters';
 import { createApartment, deleteApartment, readApartmentsInfoById, readApartmentsInfoPaginated, readApartmentsInfosByOwner, readApartmentsInfosWithNoRelations, updateApartment } from '../services/apartmentsService';
 import { getCoordinatesByApartmentId } from '../services/coordinatesService';
+import { handleError, handleMissingBearer, handleResponse } from '../services/responseService';
+import { verifyUser } from '../services/authenticationService';
 
 const aptRoutes = new Elysia();
 
@@ -14,34 +15,19 @@ aptRoutes.use(bearer()).get(
     '/:id',
     async ({ bearer, params }) => {
         try {
+            await verifyUser(bearer);
             const id = parseInt(params.id);
             if (isNaN(id)) {
-                return new Response('{"message": "Invalid apartment ID"}', {
-                    status: 400,
-                    headers: { 'Content-Type': 'application/json' },
-                });
+                return handleResponse('{"message": "Invalid apartment ID}', 400);
             }
-            return await readApartmentsInfoById(bearer, id);
+            return await readApartmentsInfoById(id);
         } catch (error) {
-            if (error instanceof HttpError) {
-                return new Response(`{\"message\":${error.message}}`, {
-                    status: error.statusCode,
-                    headers: { 'Content-Type': 'application/json' },
-                });
-            }
-            throw error;
+            return handleError(error);
         }
     },
     {
         beforeHandle({ bearer, set }) {
-            if (!bearer) {
-                console.log('Bearer not found');
-                set.headers['WWW-Authenticate'] = `Bearer realm='sign', error="invalid_request"`;
-                return new Response(`{\"message\": \"Bearer not found or invalid"}`, {
-                    status: 401,
-                    headers: { 'Content-Type': 'application/json' },
-                });
-            }
+            if (!bearer) return handleMissingBearer(set);
         },
     },
 );
@@ -51,39 +37,20 @@ aptRoutes.use(bearer()).delete(
     '/:id',
     async ({ bearer, params }) => {
         try {
+            const userId: string = await verifyUser(bearer);
             const id = parseInt(params.id);
             if (isNaN(id)) {
-                return new Response('{"message": "Invalid apartment ID"}', {
-                    status: 400,
-                    headers: { 'Content-Type': 'application/json' },
-                });
+                return handleResponse('{"message": "Invalid apartment ID"}', 400);
             }
-            await deleteApartment(bearer, id);
-            return new Response('{"status":"OK"}', {
-                status: 200,
-                headers: { 'Content-Type': 'application/json' },
-            });
+            await deleteApartment(userId, id);
+            return handleResponse('{"status":"Deleted"}', 204);
         } catch (error) {
-            if (error instanceof HttpError) {
-                return new Response(`{\"message\":${error.message}}`, {
-                    status: error.statusCode,
-                    headers: { 'Content-Type': 'application/json' },
-                });
-            }
-            throw error;
+            return handleError(error);
         }
     },
     {
         beforeHandle({ bearer, set }) {
-            if (!bearer) {
-                console.log('Bearer not found');
-                set.headers['WWW-Authenticate'] = `Bearer realm='sign', error="invalid_request"`;
-
-                return new Response(`{\"message\": \"Bearer not found or invalid"}`, {
-                    status: 401,
-                    headers: { 'Content-Type': 'application/json' },
-                });
-            }
+            if (!bearer) return handleMissingBearer(set);
         },
     },
 );
@@ -93,30 +60,17 @@ aptRoutes.use(bearer()).get(
     '/',
     async ({ bearer, query }) => {
         try {
+            await verifyUser(bearer);
             const offset = query.offset ? parseInt(query.offset) : 0;
             const limit = query.limit ? parseInt(query.limit) : 10;
-            return await readApartmentsInfoPaginated(bearer, offset, limit);
+            return await readApartmentsInfoPaginated(offset, limit);
         } catch (error) {
-            if (error instanceof HttpError) {
-                return new Response(`{\"message\":${error.message}}`, {
-                    status: error.statusCode,
-                    headers: { 'Content-Type': 'application/json' },
-                });
-            }
-            throw error;
+            return handleError(error);
         }
     },
     {
         beforeHandle({ bearer, set }) {
-            if (!bearer) {
-                console.log('Bearer not found');
-                set.headers['WWW-Authenticate'] = `Bearer realm='sign', error="invalid_request"`;
-
-                return new Response(`{\"message\": \"Bearer not found or invalid"}`, {
-                    status: 401,
-                    headers: { 'Content-Type': 'application/json' },
-                });
-            }
+            if (!bearer) return handleMissingBearer(set);
         },
     },
 );
@@ -126,30 +80,17 @@ aptRoutes.use(bearer()).get(
     '/owned',
     async ({ bearer, query }) => {
         try {
+            const userId: string = await verifyUser(bearer);
             const offset = query.offset ? parseInt(query.offset) : 0;
             const limit = query.limit ? parseInt(query.limit) : 10;
-            return await readApartmentsInfosByOwner(bearer, offset, limit);
+            return await readApartmentsInfosByOwner(userId, offset, limit);
         } catch (error) {
-            if (error instanceof HttpError) {
-                return new Response(`{\"message\":${error.message}}`, {
-                    status: error.statusCode,
-                    headers: { 'Content-Type': 'application/json' },
-                });
-            }
-            throw error;
+            return handleError(error);
         }
     },
     {
         beforeHandle({ bearer, set }) {
-            if (!bearer) {
-                console.log('Bearer not found');
-                set.headers['WWW-Authenticate'] = `Bearer realm='sign', error="invalid_request"`;
-
-                return new Response(`{\"message\": \"Bearer not found or invalid"}`, {
-                    status: 401,
-                    headers: { 'Content-Type': 'application/json' },
-                });
-            }
+            if (!bearer) return handleMissingBearer(set);
         },
     },
 );
@@ -158,6 +99,7 @@ aptRoutes.use(bearer()).get(
     '/noRelations',
     async ({ bearer, query }) => {
         try {
+            await verifyUser(bearer);
             const limit = query.limit ? parseInt(query.limit) : 10;
             const filters: Filters = new Filters(
                 query.rent ? parseInt(query.rent) : 850,
@@ -168,26 +110,12 @@ aptRoutes.use(bearer()).get(
             )
             return await readApartmentsInfosWithNoRelations(bearer, filters, limit);
         } catch (error) {
-            if (error instanceof HttpError) {
-                return new Response(`{\"message\":${error.message}}`, {
-                    status: error.statusCode,
-                    headers: { 'Content-Type': 'application/json' },
-                });
-            }
-            throw error;
+            return handleError(error);
         }
     },
     {
         beforeHandle({ bearer, set }) {
-            if (!bearer) {
-                console.log('Bearer not found');
-                set.headers['WWW-Authenticate'] = `Bearer realm='sign', error="invalid_request"`;
-
-                return new Response(`{\"message\": \"Bearer not found or invalid"}`, {
-                    status: 401,
-                    headers: { 'Content-Type': 'application/json' },
-                });
-            }
+            if (!bearer) return handleMissingBearer(set);
         },
     },
 );
@@ -196,28 +124,15 @@ aptRoutes.use(bearer()).get(
     '/coordinates',
     async ({ bearer,query }) => {
         try {
-            return await getCoordinatesByApartmentId(bearer, parseInt(query.apartment_id));
+            await verifyUser(bearer);
+            return await getCoordinatesByApartmentId(parseInt(query.apartment_id));
         } catch (error) {
-            if (error instanceof HttpError) {
-                return new Response(`{\"message\":${error.message}}`, {
-                    status: error.statusCode,
-                    headers: { 'Content-Type': 'application/json' },
-                });
-            }
-            throw error;
+            return handleError(error);
         }
     },
     {
         beforeHandle({ bearer, set }) {
-            if (!bearer) {
-                console.log('Bearer not found');
-                set.headers['WWW-Authenticate'] = `Bearer realm='sign', error="invalid_request"`;
-
-                return new Response(`{\"message\": \"Bearer not found or invalid"}`, {
-                    status: 401,
-                    headers: { 'Content-Type': 'application/json' },
-                });
-            }
+            if (!bearer) return handleMissingBearer(set);
         },
     },
 );
@@ -226,8 +141,10 @@ aptRoutes.use(bearer()).post(
     '/',
     async ({ bearer, body }) => {
         try {
+            const userId: string = await verifyUser(bearer);
             await createApartment(
                 bearer,
+                userId,
                 new request(
                     body.name,
                     body.location,
@@ -252,20 +169,10 @@ aptRoutes.use(bearer()).post(
                     body.orientation,
                 ),
             );
+            return handleResponse('{"status":"Created"}', 200);
         } catch (error) {
-            if (error instanceof HttpError) {
-                console.error('Error creating apartment: ' + error.message);
-                return new Response(`{\"message\":${error.message}}`, {
-                    status: error.statusCode,
-                    headers: { 'Content-Type': 'application/json' },
-                });
-            }
-            throw error;
+            return handleError(error);
         }
-        return new Response('{"status":"OK"}', {
-            status: 201,
-            headers: { 'Content-Type': 'application/json' },
-        });
     },
     {
         body: t.Object({
@@ -347,15 +254,7 @@ aptRoutes.use(bearer()).post(
             }),
         }),
         beforeHandle({ bearer, set }) {
-            if (!bearer) {
-                console.log('Bearer not found');
-                set.headers['WWW-Authenticate'] = `Bearer realm='sign', error="invalid_request"`;
-
-                return new Response(`{\"message\": \"Bearer not found or invalid"}`, {
-                    status: 401,
-                    headers: { 'Content-Type': 'application/json' },
-                });
-            }
+            if (!bearer) return handleMissingBearer(set);
         },
     },
 );
@@ -364,8 +263,10 @@ aptRoutes.use(bearer()).put(
     '/',
     async ({ bearer, body }) => {
         try {
+            const userId: string = await verifyUser(bearer);
             await updateApartment(
                 bearer,
+                userId,
                 new apartment_info(
                     body.apartment_id,
                     body.name,
@@ -392,18 +293,9 @@ aptRoutes.use(bearer()).put(
                     body.orientation,
                 ),
             );
-            return new Response('{"status":"OK"}', {
-                status: 200,
-                headers: { 'Content-Type': 'application/json' },
-            });
+            return handleResponse('{"status":"Updated}', 200);
         } catch (error) {
-            if (error instanceof HttpError) {
-                return new Response(`{\"message\":${error.message}}`, {
-                    status: error.statusCode,
-                    headers: { 'Content-Type': 'application/json' },
-                });
-            }
-            throw error;
+            return handleError(error);
         }
     },
     {
@@ -489,15 +381,7 @@ aptRoutes.use(bearer()).put(
             }),
         }),
         beforeHandle({ bearer, set }) {
-            if (!bearer) {
-                console.log('Bearer not found');
-                set.headers['WWW-Authenticate'] = `Bearer realm='sign', error="invalid_request"`;
-
-                return new Response(`{\"message\": \"Bearer not found or invalid"}`, {
-                    status: 401,
-                    headers: { 'Content-Type': 'application/json' },
-                });
-            }
+            if (!bearer) return handleMissingBearer(set);
         },
     },
 );

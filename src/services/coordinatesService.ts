@@ -3,20 +3,20 @@ import { getUser } from "../data/users";
 import { apartment_coordinates } from "../models/apartment_coordinates";
 import { getApartmentCoordinates, setApartmentCoordinates } from "../data/apartment_coordinates";
 import { getCoordinates } from "../data/openstreetmap";
+import { getLogger } from "./logger";
+import { Logger } from "winston";
+import { handleResponse } from "./responseService";
 
+const logger: Logger = getLogger('CoordinatesService');
 
-export async function getCoordinatesByApartmentId(bearer: string, apartment_id: number): Promise<{ lat: number; lon: number }> {
-    console.log('Getting coordinates for apartment ID:', apartment_id);
-    const userId = await getUser(bearer);
-    if (!userId) {
-        throw HttpError.Unauthorized('User not found or Unauthorized');
-    }
+export async function getCoordinatesByApartmentId(apartment_id: number): Promise<Response> {
+    logger.info(`Getting coordinates for apartment ID: ${apartment_id}`);
     const coordinates: apartment_coordinates = await getApartmentCoordinates(apartment_id);
-    console.log('Retrieved coordinates:', coordinates);
+    logger.info(`Retrieved coordinates: ${coordinates}`);
     if (!coordinates) {
         throw HttpError.NotFound('Apartment info not found');
     }
-    return { lat: coordinates.lat, lon: coordinates.lon };
+    return handleResponse('{ "lat": coordinates.lat, "lon": coordinates.lon }',200);
 }
 
 export async function setCoordinatesForApartmentId(apartment_id: number, address: string): Promise<void> {

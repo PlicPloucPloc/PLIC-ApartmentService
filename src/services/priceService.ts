@@ -3,6 +3,10 @@ import { getUser } from "../data/users";
 import { getPricePerElecRate } from "../data/dpe";
 import { request } from "../routes/requests/request";
 import { apartment_info } from "../models/apartment_info";
+import { getLogger } from "./logger";
+import { Logger } from "winston";
+
+const logger: Logger = getLogger('PriceService');
 
 // Estimation for one person apartment
 const AVERAGE_HOT_WATER_CONSUMPTION_PER_YEAR_ELEC: number = 689; // in kWh for electric hot water
@@ -24,7 +28,7 @@ export async function estimatePrice(
         var dpe_kwh = convertDpeTokWh(apt_info.energy_class);
 
         var price_elec: number = await getPricePerElecRate('EDF_bleu');
-        console.log("Price per kWh for electricity: " + price_elec);
+        logger.info(`Price per kWh for electricity: ${price_elec}`);
 
         if (apt_info.heating_type == 'electric') {
             var total : number =  AVERAGE_CONSUMPTION_OTHERS + AVERAGE_HOT_WATER_CONSUMPTION_PER_YEAR_ELEC + AVERAGE_COOKING_CONSUMPTION_PER_YEAR_ELEC;
@@ -52,7 +56,7 @@ export async function estimatePriceUpdate(
         var dpe_kwh = convertDpeTokWh(apt_info.energy_class);
 
         var price_elec: number = await getPricePerElecRate('EDF_bleu');
-        console.log("Price per kWh for electricity: " + price_elec);
+        logger.info(`Price per kWh for electricity: ${price_elec}`);
 
         if (apt_info.heating_type == 'electric') {
             var total : number =  AVERAGE_CONSUMPTION_OTHERS + AVERAGE_HOT_WATER_CONSUMPTION_PER_YEAR_ELEC + AVERAGE_COOKING_CONSUMPTION_PER_YEAR_ELEC;
