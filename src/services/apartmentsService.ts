@@ -10,7 +10,7 @@ import { getCoordinates } from '../data/openstreetmap';
 import { getLogger } from './logger';
 import { Logger } from 'winston';
 import { relation } from '../models/relations';
-import { estimatePrice } from './priceEstimationService';
+import { estimatePrice } from './priceService';
 import { setCoordinatesForApartmentId } from './coordinatesService';
 import { handleResponse } from './responseService';
 
