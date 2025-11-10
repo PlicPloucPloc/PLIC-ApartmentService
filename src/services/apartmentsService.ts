@@ -51,9 +51,8 @@ export async function readApartmentsInfosWithNoRelations(
     filters: Filters,
     limit: number
 ): Promise<Response> {
-    var coordinates: coordinates = await getCoordinates(filters.location);
     var aptRel: relation[] = await getApartmentIdAllRelations(bearer);
-    var apts: apartment_info[] = (await getApartmentInfoFiltered(filters, coordinates.lat, coordinates.lon, limit*5, aptRel.map(rel => rel.apt.apartment_id)));
+    var apts: apartment_info[] = (await getApartmentInfoFiltered(filters, filters.lat, filters.lon, limit*5, aptRel.map(rel => rel.apt.apartment_id)));
     var ordered_aptIds: number[] = await orderApartmentIds(bearer, apts.map(apt => apt.apartment_id));
     var ordered_apts: apartment_info[] = [];
     if (apts.length < limit) limit = apts.length;
