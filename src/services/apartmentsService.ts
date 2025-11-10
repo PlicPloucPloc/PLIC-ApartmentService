@@ -56,6 +56,7 @@ export async function readApartmentsInfosWithNoRelations(
     var apts: apartment_info[] = (await getApartmentInfoFiltered(filters, coordinates.lat, coordinates.lon, limit*5, aptRel.map(rel => rel.apt.apartment_id)));
     var ordered_aptIds: number[] = await orderApartmentIds(bearer, apts.map(apt => apt.apartment_id));
     var ordered_apts: apartment_info[] = [];
+    if (apts.length < limit) limit = apts.length;
     for (let i = 0; i < limit; i++){
         ordered_apts.push(apts.find(apt => apt.apartment_id == ordered_aptIds[i])!);
     }
