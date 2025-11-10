@@ -5,8 +5,6 @@ import { apartment_info } from '../models/apartment_info';
 import { deleteApartmentInfo, getApartmentInfoById, getApartmentInfoFiltered, getApartmentsInfoPaginated, setApartmentInfo, updateApartmentInfo } from '../data/apartments_infos';
 import { getApartmentById, getApartmentsByOwnerPaginated, setApartment } from '../data/apartments';
 import { Filters } from '../models/filters';
-import { coordinates } from '../models/coordinates';
-import { getCoordinates } from '../data/openstreetmap';
 import { getLogger } from './logger';
 import { Logger } from 'winston';
 import { relation } from '../models/relations';
