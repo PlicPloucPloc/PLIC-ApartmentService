@@ -9,8 +9,8 @@ import { getLogger } from './logger';
 import { Logger } from 'winston';
 import { relation } from '../models/relations';
 import { estimatePrice } from './priceService';
-import { setCoordinatesForApartmentId } from './coordinatesService';
 import { handleResponse } from './responseService';
+import { setCoordinatesForApartmentId } from './coordinatesServices';
 
 const logger: Logger = getLogger('Apartments');
 

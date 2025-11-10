@@ -4,9 +4,9 @@ import { request } from './requests/request';
 import { apartment_info } from '../models/apartment_info';
 import { Filters } from '../models/filters';
 import { createApartment, deleteApartment, readApartmentsInfoById, readApartmentsInfoPaginated, readApartmentsInfosByOwner, readApartmentsInfosWithNoRelations, updateApartment } from '../services/apartmentsService';
-import { getCoordinatesByApartmentId } from '../services/coordinatesService';
 import { handleError, handleMissingBearer, handleResponse } from '../services/responseService';
 import { verifyUser } from '../services/authenticationService';
+import { getCoordinatesByApartmentId } from '../services/coordinatesServices';
 
 const aptRoutes = new Elysia();
 
