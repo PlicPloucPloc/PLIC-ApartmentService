@@ -103,8 +103,8 @@ aptRoutes.use(bearer()).get(
             const limit = query.limit ? parseInt(query.limit) : 10;
             const filters: Filters = new Filters(
                 query.rent ? parseInt(query.rent) : 850,
-                query.lat ? parseInt(query.lat) : 48.857547499999995,
-                query.lon ? parseInt(query.lon) : 2.3513764999999998,
+                query.lat ? parseFloat(query.lat) : 48.857547499999995,
+                query.lon ? parseFloat(query.lon) : 2.3513764999999998,
                 query.min_size ? parseInt(query.size) : 20,
                 query.max_size ? parseInt(query.size) : 100,
                 query.is_furnished === 'true' ? true : false,
