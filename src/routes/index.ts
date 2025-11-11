@@ -102,11 +102,11 @@ aptRoutes.use(bearer()).get(
             await verifyUser(bearer);
             const limit = query.limit ? parseInt(query.limit) : 10;
             const filters: Filters = new Filters(
-                query.rent ? parseInt(query.rent) : 850,
+                query.rent ? parseInt(query.rent) : 10000,
                 query.lat ? parseFloat(query.lat) : 48.857547499999995,
                 query.lon ? parseFloat(query.lon) : 2.3513764999999998,
-                query.min_size ? parseInt(query.size) : 20,
-                query.max_size ? parseInt(query.size) : 100,
+                query.min_size ? parseInt(query.min_size) : 5,
+                query.max_size ? parseInt(query.max_size) : 100,
                 query.is_furnished === 'true' ? true : false,
             )
             return await readApartmentsInfosWithNoRelations(bearer, filters, limit);
