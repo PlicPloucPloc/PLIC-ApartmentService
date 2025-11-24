@@ -1,6 +1,10 @@
+import { Logger } from "winston";
 import { supabase } from "../libs/supabase";
 import { apartment_info } from "../models/apartment_info";
 import { Filters } from "../models/filters";
+import { getLogger } from "../services/logger";
+
+const logger:Logger = getLogger('ApartmentInfo')
 
 export async function getApartmentsInfoPaginated(
     offset: number,
@@ -10,6 +14,19 @@ export async function getApartmentsInfoPaginated(
         .from('apartment_info')
         .select('*')
         .range(offset, offset + limit - 1);
+
+    if (error) {
+        throw new Error(`Error fetching apartments_info: ${error.message}`);
+    }
+
+    return data;
+}
+
+export async function getAllAptInfo() : Promise<apartment_info[]>{
+    logger.info(`Getting apts`);
+    const { data, error } = await supabase
+        .from('apartment_info')
+        .select('*');
 
     if (error) {
         throw new Error(`Error fetching apartments_info: ${error.message}`);
