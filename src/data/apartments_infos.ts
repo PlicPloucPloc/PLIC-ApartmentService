@@ -22,19 +22,6 @@ export async function getApartmentsInfoPaginated(
     return data;
 }
 
-export async function getAllAptInfo() : Promise<apartment_info[]>{
-    logger.info(`Getting apts`);
-    const { data, error } = await supabase
-        .from('apartment_info')
-        .select('*');
-
-    if (error) {
-        throw new Error(`Error fetching apartments_info: ${error.message}`);
-    }
-
-    return data;
-}
-
 export async function getApartmentInfoById(id: number): Promise<apartment_info | null> {
     const { data, error } = await supabase
         .from('apartment_info')
