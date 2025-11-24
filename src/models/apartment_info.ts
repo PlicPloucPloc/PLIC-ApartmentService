@@ -22,6 +22,7 @@ export class apartment_info {
     construction_year: number;
     number_of_floors: number;
     orientation: string;
+    owner_id?: number;
     constructor(
         apartment_id: number,
         name: string,
@@ -46,6 +47,7 @@ export class apartment_info {
         construction_year: number,
         number_of_floors: number,
         orientation: string,
+        owner_id?: number
     ) {
         this.apartment_id = apartment_id;
         this.name = name;
@@ -70,5 +72,6 @@ export class apartment_info {
         this.construction_year = construction_year;
         this.number_of_floors = number_of_floors;
         this.orientation = orientation;
+        this.owner_id = owner_id;
     }
 }
