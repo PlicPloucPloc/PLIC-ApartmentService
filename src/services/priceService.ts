@@ -24,70 +24,45 @@ export async function estimatePrice(
         throw HttpError.Unauthorized('User not found or Unauthorized');
     }
     
-    if (apt_info.heating_mode == null || apt_info.heating_mode === 'individual' ) {
+    var price_elec: number = await getPricePerElecRate('EDF_bleu');
+    if (apt_info.heating_type == null || apt_info.heating_type === 'individual' ) {
         var dpe_kwh = convertDpeTokWh(apt_info.energy_class);
 
-        var price_elec: number = await getPricePerElecRate('EDF_bleu');
         logger.info(`Price per kWh for electricity: ${price_elec}`);
 
-        if (apt_info.heating_type == 'electric') {
-            var total : number =  AVERAGE_CONSUMPTION_OTHERS + AVERAGE_HOT_WATER_CONSUMPTION_PER_YEAR_ELEC + AVERAGE_COOKING_CONSUMPTION_PER_YEAR_ELEC;
+        if (apt_info.heating_mode == 'electric') {
+            var total : number =  AVERAGE_CONSUMPTION_OTHERS + AVERAGE_COOKING_CONSUMPTION_PER_YEAR_ELEC;
 
-            return apt_info.rent + ((total * price_elec + dpe_kwh * price_elec *  apt_info.surface)/12);
+            return ((total * price_elec + dpe_kwh * price_elec *  apt_info.surface)/12);
         }
         var elect_total : number = AVERAGE_CONSUMPTION_OTHERS + AVERAGE_COOKING_CONSUMPTION_PER_YEAR_ELEC;
 
-        return apt_info.rent + ((AVERAGE_HOT_WATER_CONSUMPTION_PER_YEAR_GAS * AVERAGE_GAS_PRICE_PER_KWH + dpe_kwh * AVERAGE_GAS_PRICE_PER_KWH * apt_info.surface + elect_total * price_elec)/12);
+        return ((dpe_kwh * AVERAGE_GAS_PRICE_PER_KWH * apt_info.surface + elect_total * price_elec)/12);
     }
 
-    return apt_info.rent;
+    return (AVERAGE_CONSUMPTION_OTHERS + AVERAGE_COOKING_CONSUMPTION_PER_YEAR_ELEC)*price_elec/12;
 }
 
-export async function estimatePriceUpdate(
-    bearer: string,
-    apt_info: apartment_info,
-): Promise<number> {
-    const userId = await getUser(bearer);
-    if (!userId) {
-        throw HttpError.Unauthorized('User not found or Unauthorized');
-    }
-    
-    if (apt_info.heating_mode == null || apt_info.heating_mode === 'individual' ) {
-        var dpe_kwh = convertDpeTokWh(apt_info.energy_class);
-
-        var price_elec: number = await getPricePerElecRate('EDF_bleu');
-        logger.info(`Price per kWh for electricity: ${price_elec}`);
-
-        if (apt_info.heating_type == 'electric') {
-            var total : number =  AVERAGE_CONSUMPTION_OTHERS + AVERAGE_HOT_WATER_CONSUMPTION_PER_YEAR_ELEC + AVERAGE_COOKING_CONSUMPTION_PER_YEAR_ELEC;
-
-            return apt_info.rent + ((total * price_elec + dpe_kwh * price_elec *  apt_info.surface)/12);
-        }
-        var elect_total : number = AVERAGE_CONSUMPTION_OTHERS + AVERAGE_COOKING_CONSUMPTION_PER_YEAR_ELEC;
-
-        return apt_info.rent + ((AVERAGE_HOT_WATER_CONSUMPTION_PER_YEAR_GAS * AVERAGE_GAS_PRICE_PER_KWH + dpe_kwh * AVERAGE_GAS_PRICE_PER_KWH * apt_info.surface + elect_total * price_elec)/12);
-    }
-
-    return apt_info.rent;
-}
-
-function convertDpeTokWh(ges: string): number {
-    switch (ges) {
-        case 'A':
+function convertDpeTokWh(energy_class: string): number {
+    if (energy_class == null) return 330;
+    energy_class = energy_class.toLowerCase();
+    switch (energy_class) {
+        case 'a':
             return 50;
-        case 'B':
+        case 'b':
             return 90;
-        case 'C':
+        case 'c':
             return 150;
-        case 'D':
+        case 'd':
             return 230;
-        case 'E':
+        case 'e':
             return 330;
-        case 'F':
+        case 'f':
             return 450;
-        case 'G':
+        case 'g':
             return 550;
         default:
-            throw HttpError.BadRequest('Invalid GES value');
+            logger.warn('Invalid DPE value: ' + energy_class);
+            return 330;
     }
 }
