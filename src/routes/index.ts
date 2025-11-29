@@ -3,7 +3,7 @@ import bearer from '@elysiajs/bearer';
 import { request } from './requests/request';
 import { apartment_info } from '../models/apartment_info';
 import { Filters } from '../models/filters';
-import { createApartment, deleteApartment, readApartmentsInfoById, readApartmentsInfoPaginated, readApartmentsInfosByOwner, readApartmentsInfosWithNoRelations, updateApartment } from '../services/apartmentsService';
+import { createApartment, deleteApartment, priceGoBrr, readApartmentsById, readApartmentsInfoById, readApartmentsInfoPaginated, readApartmentsInfosByOwner, readApartmentsInfosWithNoRelations, updateApartment } from '../services/apartmentsService';
 import { handleError, handleMissingBearer, handleResponse } from '../services/responseService';
 import { verifyUser } from '../services/authenticationService';
 import { getCoordinatesByApartmentId } from '../services/coordinatesServices';
@@ -21,6 +21,27 @@ aptRoutes.use(bearer()).get(
                 return handleResponse('{"message": "Invalid apartment ID}', 400);
             }
             return await readApartmentsInfoById(id);
+        } catch (error) {
+            return handleError(error);
+        }
+    },
+    {
+        beforeHandle({ bearer, set }) {
+            if (!bearer) return handleMissingBearer(set);
+        },
+    },
+);
+
+aptRoutes.use(bearer()).get(
+    '/owner/:id',
+    async ({ bearer, params }) => {
+        try {
+            await verifyUser(bearer);
+            const id = parseInt(params.id);
+            if (isNaN(id)) {
+                return handleResponse('{"message": "Invalid apartment ID}', 400);
+            }
+            return await readApartmentsById(id);
         } catch (error) {
             return handleError(error);
         }

@@ -2,7 +2,7 @@ import { HttpError } from 'elysia-http-error';
 import { addApartmentNode, getApartmentIdAllRelations, orderApartmentIds } from '../data/likes';
 import { request } from '../routes/requests/request';
 import { apartment_info } from '../models/apartment_info';
-import { deleteApartmentInfo, getApartmentInfoById, getApartmentInfoFiltered, getApartmentsInfoPaginated, setApartmentInfo, updateApartmentInfo } from '../data/apartments_infos';
+import { deleteApartmentInfo,  getApartmentInfoById, getApartmentInfoFiltered, getApartmentsInfoPaginated, setApartmentInfo, updateApartmentInfo } from '../data/apartments_infos';
 import { getApartmentById, getApartmentsByOwnerPaginated, setApartment } from '../data/apartments';
 import { Filters } from '../models/filters';
 import { getLogger } from './logger';
@@ -11,6 +11,7 @@ import { relation } from '../models/relations';
 import { estimatePrice } from './priceService';
 import { handleResponse } from './responseService';
 import { setCoordinatesForApartmentId } from './coordinatesServices';
+import { apartment } from '../models/apartment';
 
 const logger: Logger = getLogger('Apartments');
 
@@ -21,6 +22,19 @@ export async function readApartmentsInfoById(id: number): Promise<Response> {
     }
 
     return handleResponse(JSON.stringify(apt_info), 200);
+}
+
+export async function readApartmentsById(id: number): Promise<Response> {
+    const apt: apartment = await getApartmentById(id);
+    if (!apt) {
+        throw HttpError.NotFound('Apartment not found');
+    }
+    return handleResponse(JSON.stringify(
+        {
+            id: apt.id,
+            owner_id: apt.owner_id,
+        }
+    ), 200);
 }
 
 export async function readApartmentsInfosByOwner(
