@@ -17,9 +17,11 @@ const logger: Logger = getLogger('Apartments');
 
 export async function readApartmentsInfoById(id: number): Promise<Response> {
     const apt_info = await getApartmentInfoById(id);
+    const owner_id: number = (await getApartmentById(id))?.owner
     if (!apt_info) {
         throw HttpError.NotFound('Apartment info not found');
     }
+    apt_info.owner_id = owner_id; 
 
     return handleResponse(JSON.stringify(apt_info), 200);
 }
