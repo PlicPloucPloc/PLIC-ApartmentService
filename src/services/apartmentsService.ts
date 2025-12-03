@@ -2,7 +2,7 @@ import { HttpError } from 'elysia-http-error';
 import { addApartmentNode, getApartmentIdAllRelations, orderApartmentIds } from '../data/likes';
 import { request } from '../routes/requests/request';
 import { apartment_info } from '../models/apartment_info';
-import { deleteApartmentInfo,  getApartmentInfoById, getApartmentInfoFiltered, getApartmentsInfoPaginated, setApartmentInfo, updateApartmentInfo } from '../data/apartments_infos';
+import { deleteApartmentInfo,  getAllApartmentsInfo,  getApartmentInfoById, getApartmentInfoFiltered, getApartmentsInfoPaginated, setApartmentInfo, updateApartmentInfo } from '../data/apartments_infos';
 import { getApartmentById, getApartmentsByOwnerPaginated, setApartment } from '../data/apartments';
 import { Filters } from '../models/filters';
 import { getLogger } from './logger';
@@ -14,6 +14,17 @@ import { setCoordinatesForApartmentId } from './coordinatesServices';
 import { apartment } from '../models/apartment';
 
 const logger: Logger = getLogger('Apartments');
+
+
+export async function priceGoBrr(bearer: string) : Promise<Response> {
+    var apts_infos: apartment_info[] = await getAllApartmentsInfo();
+    for (let i = 0; i< apts_infos.length; i++){
+        var price = await estimatePrice(bearer, apts_infos[i])
+        apts_infos[i].estimated_price = price;
+        await updateApartmentInfo(apts_infos[i]);
+    }
+    return handleResponse('{"message": "OK"}', 200);
+}
 
 export async function readApartmentsInfoById(id: number): Promise<Response> {
     const apt_info = await getApartmentInfoById(id);

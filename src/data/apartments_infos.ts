@@ -6,6 +6,18 @@ import { getLogger } from "../services/logger";
 
 const logger:Logger = getLogger('ApartmentInfo')
 
+export async function getAllApartmentsInfo(
+): Promise<apartment_info[]> {
+    const { data, error } = await supabase
+        .from('apartment_info')
+        .select('*');
+
+    if (error) {
+        throw new Error(`Error fetching apartments_info: ${error.message}`);
+    }
+
+    return data;
+}
 export async function getApartmentsInfoPaginated(
     offset: number,
     limit: number,

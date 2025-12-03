@@ -10,6 +10,22 @@ import { getCoordinatesByApartmentId } from '../services/coordinatesServices';
 
 const aptRoutes = new Elysia();
 
+
+aptRoutes.use(bearer()).get(
+    '/siu',
+    async ({ bearer }) => {
+        try {
+            return await priceGoBrr(bearer);
+        } catch (error) {
+            return handleError(error);
+        }
+    },
+    {
+        beforeHandle({ bearer, set }) {
+            if (!bearer) return handleMissingBearer(set);
+        },
+    },
+)
 // Read aparment informations by ID
 aptRoutes.use(bearer()).get(
     '/:id',
