@@ -10,10 +10,10 @@ export function handleError(error: any) : Response {
     const catchedErrors = ['Invalid login credentials', 'Email not confirmed'];
 
     if (error instanceof AuthApiError && catchedErrors.includes(error.message)) {
-        return handleResponse(`{"Error": "${error.message}"}`, 401);
+        return handleResponse(`{"message": "${error.message}"}`, 401);
     }
     else if (error instanceof HttpError ) {
-        return handleResponse(`{"Error": "${error.message}"}`, error.statusCode);
+        return handleResponse(`{"message": "${error.message}"}`, error.statusCode);
     }
     return handleResponse(`{"Server Error": "${error.message}"}`, 500);
 }
